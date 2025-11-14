@@ -2,9 +2,13 @@
 
 [hfu/fusi](https://github.com/hfu/fusi) で生産された WebP Terrarium 標高タイルを MapLibre GL JS で可視化するビューアサイトです。
 
-## デモ
+## Demo
 
-GitHub Pages で公開: <https://hfu.github.io/fusite/>
+GitHub Pages で公開中：
+
+- **[index.html](https://hfu.github.io/fusite/)** - 国土地理院最適化ベクトルタイル (bvmap) オーバーレイ版
+- **[contour.html](https://hfu.github.io/fusite/contour.html)** - 動的等高線生成デモ
+- **[osm.html](https://hfu.github.io/fusite/osm.html)** - OpenStreetMap オーバーレイ版（地形1.5倍誇張）
 
 ## 機能
 
@@ -70,7 +74,10 @@ fusite/
 
 ## 謝辞
 
-このプロジェクトは [Mapterhorn](https://github.com/mapterhorn/mapterhorn) の実装手法とビジュアライゼーションに触発されました。特に Terrarium エンコーディングにおける NODATA 処理のアプローチを参考にしています。
+このプロジェクトは以下のプロジェクトに触発されました：
+
+- [Mapterhorn](https://github.com/mapterhorn/mapterhorn): Terrarium エンコーディングにおける NODATA 処理のアプローチとビジュアライゼーション手法
+- [optimal_bvmap](https://github.com/gsi-cyberjapan/optimal_bvmap): 国土地理院最適化ベクトルタイルのレイヤー構成とスタイル定義を参照
 
 ## データライセンス
 

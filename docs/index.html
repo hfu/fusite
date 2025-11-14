@@ -33,7 +33,7 @@
         // Initialize map with 3D terrain visualization
         const map = new maplibregl.Map({
             container: 'map',
-            hash: 'map',
+            hash: true,
             zoom: 9,
             center: [138.7292, 35.3628], // Mount Fuji
             pitch: 60,
@@ -50,6 +50,10 @@
                         tileSize: 512,
                         minzoom: 0,
                         maxzoom: 16
+                    },
+                    bvmap: {
+                        type: 'vector',
+                        url: 'https://tunnel.optgeo.org/martin/bvmap'
                     }
                 },
                 layers: [
@@ -70,6 +74,351 @@
                             'hillshade-exaggeration': 0.2,
                             'hillshade-highlight-color': 'rgb(255,255,235)',
                             'hillshade-shadow-color': 'rgb(110,120,130)'
+                        }
+                    },
+                    {
+                        id: '行政区画',
+                        type: 'fill',
+                        source: 'bvmap',
+                        'source-layer': 'AdmArea',
+                        paint: {
+                            'fill-color': 'rgba(255,255,255,0)',
+                            'fill-outline-color': 'rgba(110,120,130,1)'
+                        }
+                    },
+                    {
+                        id: '水域',
+                        maxzoom: 17,
+                        type: 'fill',
+                        source: 'bvmap',
+                        'source-layer': 'WA',
+                        paint: {
+                            'fill-color': 'rgba(0,0,0,0)',
+                            'fill-outline-color': 'rgba(110,120,130,1)'
+                        }
+                    },
+                    {
+                        id: '地形表記面',
+                        type: 'fill',
+                        source: 'bvmap',
+                        maxzoom: 17,
+                        'source-layer': 'TpgphArea',
+                        paint: {
+                            'fill-color': 'rgba(0,0,0,0)',
+                            'fill-outline-color': 'rgba(110,120,130,1)'
+                        }
+                    },
+                    {
+                        id: '地形表記面2',
+                        type: 'fill',
+                        source: 'bvmap',
+                        'source-layer': 'TpgphArea',
+                        minzoom: 17,
+                        filter: [
+                            'in',
+                            ['get', 'vt_flag17'],
+                            ['literal', [1, 2]]
+                        ],
+                        paint: {
+                            'fill-color': 'rgba(0,0,0,0)',
+                            'fill-outline-color': 'rgba(110,120,130,1)'
+                        }
+                    },
+                    {
+                        id: '海岸線',
+                        type: 'line',
+                        source: 'bvmap',
+                        'source-layer': 'Cstline',
+                        paint: {
+                            'line-color': 'rgba(110,120,130,1)',
+                            'line-width': 1
+                        }
+                    },
+                    {
+                        id: '河川_線',
+                        type: 'line',
+                        source: 'bvmap',
+                        'source-layer': 'RvrCL',
+                        paint: {
+                            'line-color': 'rgba(110,120,130,1)',
+                            'line-width': 1
+                        }
+                    },
+                    {
+                        id: '水涯線',
+                        type: 'line',
+                        source: 'bvmap',
+                        'source-layer': 'WL',
+                        paint: {
+                            'line-color': 'rgba(110,120,130,1)',
+                            'line-width': 1
+                        }
+                    },
+                    {
+                        id: '水部表記線polygon',
+                        type: 'fill',
+                        source: 'bvmap',
+                        'source-layer': 'WRltLine',
+                        filter: [
+                            '==',
+                            ['geometry-type'],
+                            'Polygon'
+                        ],
+                        paint: {
+                            'fill-color': 'rgba(255,255,255,0)',
+                            'fill-outline-color': 'rgba(110,120,130,1)'
+                        }
+                    },
+                    {
+                        id: '水部表記線line',
+                        type: 'line',
+                        source: 'bvmap',
+                        'source-layer': 'WRltLine',
+                        filter: [
+                            '==',
+                            ['geometry-type'],
+                            'LineString'
+                        ],
+                        paint: {
+                            'line-color': 'rgba(110,120,130,1)',
+                            'line-width': 1
+                        }
+                    },
+                    {
+                        id: '行政区画界線',
+                        type: 'line',
+                        source: 'bvmap',
+                        'source-layer': 'AdmBdry',
+                        paint: {
+                            'line-color': 'rgba(110,120,130,1)',
+                            'line-width': 1
+                        }
+                    },
+                    {
+                        id: '等深線',
+                        type: 'line',
+                        source: 'bvmap',
+                        'source-layer': 'Isbt',
+                        paint: {
+                            'line-color': 'rgba(110,120,130,1)',
+                            'line-width': 1
+                        }
+                    },
+                    {
+                        id: '水部構造物面',
+                        type: 'fill',
+                        source: 'bvmap',
+                        'source-layer': 'WStrA',
+                        paint: {
+                            'fill-color': 'rgba(0,0,0,0)',
+                            'fill-outline-color': 'rgba(110,120,130,1)'
+                        }
+                    },
+                    {
+                        id: '水部構造物線',
+                        type: 'line',
+                        source: 'bvmap',
+                        'source-layer': 'WStrL',
+                        maxzoom: 17,
+                        filter: [
+                            'any',
+                            ['!', ['has', 'vt_flag17']],
+                            ['in', ['get', 'vt_flag17'], ['literal', [0, 1]]]
+                        ],
+                        paint: {
+                            'line-color': 'rgba(110,120,130,1)',
+                            'line-width': 1
+                        }
+                    },
+                    {
+                        id: '水部構造物線2',
+                        type: 'line',
+                        source: 'bvmap',
+                        'source-layer': 'WStrL',
+                        minzoom: 17,
+                        filter: [
+                            'in',
+                            ['get', 'vt_flag17'],
+                            ['literal', [1, 2]]
+                        ],
+                        paint: {
+                            'line-color': 'rgba(110,120,130,1)',
+                            'line-width': 1
+                        }
+                    },
+                    {
+                        id: '道路_線',
+                        type: 'line',
+                        source: 'bvmap',
+                        'source-layer': 'RdCL',
+                        maxzoom: 17,
+                        paint: {
+                            'line-color': [
+                                'case',
+                                ['==', ['get', 'vt_rnkwidth'], '不明'],
+                                'rgba(255,255,255,0)',
+                                'rgba(110,120,130,1)'
+                            ],
+                            'line-width': 1
+                        }
+                    },
+                    {
+                        id: '道路_線2',
+                        type: 'line',
+                        source: 'bvmap',
+                        'source-layer': 'RdCL',
+                        minzoom: 17,
+                        filter: [
+                            'all',
+                            ['in', ['get', 'vt_flag17'], ['literal', [1, 2]]]
+                        ],
+                        paint: {
+                            'line-color': 'rgba(110,120,130,1)',
+                            'line-width': 1
+                        }
+                    },
+                    {
+                        id: '鉄道_線',
+                        maxzoom: 17,
+                        type: 'line',
+                        source: 'bvmap',
+                        'source-layer': 'RailCL',
+                        paint: {
+                            'line-color': 'rgba(110,120,130,1)',
+                            'line-width': 1
+                        }
+                    },
+                    {
+                        id: '鉄道_線2',
+                        minzoom: 17,
+                        type: 'line',
+                        source: 'bvmap',
+                        'source-layer': 'RailCL',
+                        filter: [
+                            'all',
+                            ['in', ['get', 'vt_flag17'], ['literal', [1, 2]]]
+                        ],
+                        paint: {
+                            'line-color': 'rgba(110,120,130,1)',
+                            'line-width': 1
+                        }
+                    },
+                    {
+                        id: '建築物_外周線',
+                        type: 'line',
+                        source: 'bvmap',
+                        'source-layer': 'BldA',
+                        paint: {
+                            'line-color': 'rgba(110,120,130,1)',
+                            'line-width': 1
+                        }
+                    },
+                    {
+                        id: '地下駅',
+                        type: 'fill',
+                        source: 'bvmap',
+                        'source-layer': 'UndergroundStation',
+                        paint: {
+                            'fill-color': 'rgba(0,0,0,0)',
+                            'fill-outline-color': 'rgba(110,120,130,1)'
+                        }
+                    },
+                    {
+                        id: '道路縁',
+                        minzoom: 17,
+                        type: 'line',
+                        source: 'bvmap',
+                        'source-layer': 'RdEdg',
+                        paint: {
+                            'line-color': 'rgba(110,120,130,1)',
+                            'line-width': 1
+                        }
+                    },
+                    {
+                        id: '道路構成線',
+                        minzoom: 17,
+                        type: 'line',
+                        source: 'bvmap',
+                        'source-layer': 'RdCompt',
+                        paint: {
+                            'line-color': 'rgba(110,120,130,1)',
+                            'line-width': 1
+                        }
+                    },
+                    {
+                        id: '軌道_線',
+                        minzoom: 17,
+                        type: 'line',
+                        source: 'bvmap',
+                        'source-layer': 'RailTrCL',
+                        layout: {
+                            'line-sort-key': ['get', 'vt_drworder']
+                        },
+                        paint: {
+                            'line-color': 'rgba(110,120,130,1)',
+                            'line-width': 1
+                        }
+                    },
+                    {
+                        id: '特定地区界',
+                        type: 'line',
+                        source: 'bvmap',
+                        'source-layer': 'SpcfArea',
+                        paint: {
+                            'line-color': 'rgba(110,120,130,1)',
+                            'line-width': 1
+                        }
+                    },
+                    {
+                        id: '構造物面',
+                        type: 'fill',
+                        source: 'bvmap',
+                        'source-layer': 'StrctArea',
+                        paint: {
+                            'fill-color': 'rgba(0,0,0,0)',
+                            'fill-outline-color': 'rgba(110,120,130,1)'
+                        }
+                    },
+                    {
+                        id: '構造物面の外周線',
+                        type: 'line',
+                        source: 'bvmap',
+                        'source-layer': 'StrctArea',
+                        paint: {
+                            'line-color': 'rgba(110,120,130,1)',
+                            'line-width': 1
+                        }
+                    },
+                    {
+                        id: '構造物線',
+                        type: 'line',
+                        source: 'bvmap',
+                        'source-layer': 'StrctLine',
+                        minzoom: 17,
+                        paint: {
+                            'line-color': 'rgba(110,120,130,1)',
+                            'line-width': 1
+                        }
+                    },
+                    {
+                        id: '交通トンネル口',
+                        type: 'line',
+                        source: 'bvmap',
+                        'source-layer': 'TrfTnnlEnt',
+                        minzoom: 17,
+                        paint: {
+                            'line-color': 'rgba(110,120,130,1)',
+                            'line-width': 1
+                        }
+                    },
+                    {
+                        id: '送電線',
+                        type: 'line',
+                        source: 'bvmap',
+                        'source-layer': 'PwrTrnsmL',
+                        paint: {
+                            'line-color': 'rgba(110,120,130,1)',
+                            'line-width': 1
                         }
                     }
                 ],
