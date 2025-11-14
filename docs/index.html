@@ -4,15 +4,12 @@
 <head>
     <meta charset="utf-8" />
     <title>fusi - 国土地理院標高タイル可視化</title>
-    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content="国土地理院の標高データを WebP Terrarium タイルとして可視化" />
     
     <!-- MapLibre GL JS -->
-    <script src="https://unpkg.com/maplibre-gl@5.6.0/dist/maplibre-gl.js"></script>
-    <link href="https://unpkg.com/maplibre-gl@5.6.0/dist/maplibre-gl.css" rel="stylesheet" />
-    
-    <!-- PMTiles protocol -->
-    <script src="https://unpkg.com/pmtiles@3.0.7/dist/pmtiles.js"></script>
+    <script src="https://unpkg.com/maplibre-gl@5.7.0/dist/maplibre-gl.js"></script>
+    <link href="https://unpkg.com/maplibre-gl@5.7.0/dist/maplibre-gl.css" rel="stylesheet" />
     
     <link href="style.css" rel="stylesheet" />
 </head>
@@ -24,36 +21,28 @@
         <h1>fusi 標高タイル</h1>
         <p>国土地理院の標高データを Terrarium 形式で可視化</p>
         <p class="attribution">
-            データ: <a href="https://www.gsi.go.jp/" target="_blank">国土地理院 (GSI Japan)</a><br>
+            データ: <a href="https://www.gsi.go.jp/" target="_blank" rel="noopener noreferrer">国土地理院 (GSI Japan)</a><br>
             測量法に基づく国土地理院長承認（使用）R 6JHs 133<br>
             <br>
-            Inspired by <a href="https://github.com/mapterhorn/mapterhorn" target="_blank">Mapterhorn</a><br>
-            Made with <a href="https://github.com/hfu/fusi" target="_blank">fusi</a>
+            Inspired by <a href="https://github.com/mapterhorn/mapterhorn" target="_blank" rel="noopener noreferrer">Mapterhorn</a><br>
+            Made with <a href="https://github.com/hfu/fusi" target="_blank" rel="noopener noreferrer">fusi</a>
         </p>
     </div>
     
     <script type="text/javascript">
-        // Initialize the map with 3D terrain visualization
+        // Initialize map with 3D terrain visualization
         const map = new maplibregl.Map({
             container: 'map',
             hash: 'map',
             zoom: 9,
-            center: [138.7292, 35.3628], // Mount Fuji area
+            center: [138.7292, 35.3628], // Mount Fuji
             pitch: 60,
             bearing: 0,
             maxPitch: 85,
-            projection: 'globe', // Enable globe projection
             style: {
                 version: 8,
                 glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
                 sources: {
-                    osm: {
-                        type: 'raster',
-                        tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
-                        tileSize: 256,
-                        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-                        maxzoom: 19
-                    },
                     fusiTerrain: {
                         type: 'raster-dem',
                         tiles: ['https://tunnel.optgeo.org/martin/fusi/{z}/{x}/{y}'],
@@ -72,34 +61,20 @@
                         }
                     },
                     {
-                        id: 'osm',
-                        type: 'raster',
-                        source: 'osm',
-                        paint: {
-                            'raster-opacity': 0.7
-                        }
-                    },
-                    {
                         id: 'hillshade',
                         type: 'hillshade',
                         source: 'fusiTerrain',
                         paint: {
-                            'hillshade-exaggeration': 0.3,
-                            'hillshade-shadow-color': '#473B24'
+                            // 光沢感を高めるための近似設定（多方向法が使えない標準MapLibre想定）
+                            // 暖色系ハイライト + 寒色寄りシャドウで陰影コントラストを強調
+                            'hillshade-exaggeration': 0.2,
+                            'hillshade-highlight-color': 'rgb(255,255,235)',
+                            'hillshade-shadow-color': 'rgb(110,120,130)'
                         }
                     }
                 ],
                 terrain: {
-                    source: 'fusiTerrain',
-                    exaggeration: 1.5
-                },
-                sky: {
-                    'sky-color': '#87CEEB',
-                    'sky-horizon-blend': 0.5,
-                    'horizon-color': '#ffffff',
-                    'horizon-fog-blend': 0.5,
-                    'fog-color': '#ffffff',
-                    'fog-ground-blend': 0.5
+                    source: 'fusiTerrain'
                 }
             }
         });
@@ -111,114 +86,12 @@
             showCompass: true
         }), 'top-right');
 
-        // Add scale control
-        map.addControl(new maplibregl.ScaleControl({
-            maxWidth: 200,
-            unit: 'metric'
-        }), 'bottom-right');
-
-        // Add fullscreen control
-        map.addControl(new maplibregl.FullscreenControl(), 'top-right');
-
-        // Add geolocate control
-        map.addControl(new maplibregl.GeolocateControl({
-            positionOptions: {
-                enableHighAccuracy: true
-            },
-            trackUserLocation: true
-        }), 'top-right');
-
-        // Custom Globe Control
-        class GlobeControl {
-            constructor() {
-                this._isGlobeView = true;
-            }
-
-            onAdd(map) {
-                this._map = map;
-                this._container = document.createElement('div');
-                this._container.className = 'maplibregl-ctrl maplibregl-ctrl-group';
-                this._button = document.createElement('button');
-                this._button.className = 'maplibregl-ctrl-icon';
-                this._button.type = 'button';
-                this._button.title = 'Toggle Globe/Mercator';
-                this._button.innerHTML = '🌐';
-                this._button.style.fontSize = '18px';
-                this._button.onclick = () => {
-                    this._isGlobeView = !this._isGlobeView;
-                    map.setProjection(this._isGlobeView ? 'globe' : 'mercator');
-                    this._button.innerHTML = this._isGlobeView ? '🌐' : '🗺️';
-                };
-                this._container.appendChild(this._button);
-                return this._container;
-            }
-
-            onRemove() {
-                this._container.parentNode.removeChild(this._container);
-                this._map = undefined;
-            }
-        }
-
-        // Add Globe control
-        map.addControl(new GlobeControl(), 'top-right');
-
-        // Custom Terrain Exaggeration Control
-        class TerrainExaggerationControl {
-            onAdd(map) {
-                this._map = map;
-                this._container = document.createElement('div');
-                this._container.className = 'maplibregl-ctrl terrain-ctrl';
-                this._container.innerHTML = `
-                    <div class="terrain-exaggeration">
-                        <label for="terrain-slider">地形強調: <span id="terrain-value">1.5</span>x</label>
-                        <input type="range" id="terrain-slider" min="0" max="3" step="0.1" value="1.5">
-                    </div>
-                `;
-                
-                const slider = this._container.querySelector('#terrain-slider');
-                const valueDisplay = this._container.querySelector('#terrain-value');
-                
-                slider.oninput = (e) => {
-                    const value = parseFloat(e.target.value);
-                    valueDisplay.textContent = value.toFixed(1);
-                    map.setTerrain({
-                        source: 'fusiTerrain',
-                        exaggeration: value
-                    });
-                };
-                
-                return this._container;
-            }
-
-            onRemove() {
-                this._container.parentNode.removeChild(this._container);
-                this._map = undefined;
-            }
-        }
-
-        // Add Terrain Exaggeration control
-        map.addControl(new TerrainExaggerationControl(), 'bottom-left');
-
-        // Add attribution link
+        // Add GSI attribution to map controls
         map.on('load', () => {
-            console.log('Map loaded successfully with fusi terrain tiles');
-            
-            // Add custom attribution
             const attributionControl = document.querySelector('.maplibregl-ctrl-attrib-inner');
             if (attributionControl && !attributionControl.innerHTML.includes('国土地理院')) {
-                attributionControl.innerHTML += ' | データ: <a href="https://www.gsi.go.jp/" target="_blank">国土地理院 (GSI Japan)</a> R 6JHs 133';
+                attributionControl.innerHTML += ' | データ: <a href="https://www.gsi.go.jp/" target="_blank" rel="noopener noreferrer">国土地理院 (GSI Japan)</a> R 6JHs 133';
             }
-        });
-
-        // Log terrain tile loading for debugging
-        map.on('sourcedataloading', (e) => {
-            if (e.sourceId === 'fusiTerrain') {
-                console.log('Loading fusi terrain tile:', e);
-            }
-        });
-
-        map.on('error', (e) => {
-            console.error('Map error:', e);
         });
     </script>
 </body>

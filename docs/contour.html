@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <title>fusi 等高線例</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="description" content="Terrarium 標高タイルから動的に等高線を生成する例" />
+  <script src="https://unpkg.com/maplibre-gl@5.7.0/dist/maplibre-gl.js"></script>
+  <link href="https://unpkg.com/maplibre-gl@5.7.0/dist/maplibre-gl.css" rel="stylesheet" />
+  <script src="https://unpkg.com/maplibre-contour@0.0.5/dist/index.min.js"></script>
+  <link href="style.css" rel="stylesheet" />
+  <style>
+    html,body { margin:0; padding:0; }
+    #map { position:absolute; inset:0; }
+    .info-panel { max-width:340px; }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <div class="info-panel">
+    <h1>等高線表示 (動的生成)</h1>
+    <p>Terrarium 標高タイルから <code>maplibre-contour</code> を用いてズーム別閾値で等高線を生成。</p>
+    <p class="attribution">
+      標高データ: 国土地理院 R 6JHs 133<br/>
+      ライブラリ: <a href="https://github.com/maplibre/maplibre-gl-js" target="_blank" rel="noopener noreferrer">MapLibre GL JS</a>, <a href="https://www.npmjs.com/package/maplibre-contour" target="_blank" rel="noopener noreferrer">maplibre-contour</a>
+    </p>
+  </div>
+  <script>
+    // DEM ソース定義 (Terrarium)
+    const demSource = new mlcontour.DemSource({
+      url: 'https://tunnel.optgeo.org/martin/fusi/{z}/{x}/{y}',
+      encoding: 'terrarium',
+      tileSize: 512,
+      maxzoom: 16,
+      worker: true
+    });
+    demSource.setupMaplibre(maplibregl);
+
+    const map = new maplibregl.Map({
+      container: 'map',
+      hash: 'map',
+      zoom: 11,
+      center: [138.7292, 35.3628],
+      pitch: 55,
+      style: {
+        version: 8,
+        sources: {
+          // hillshade と terrain は index.html と同様に直接 fusi タイルを使用
+          fusiTerrain: {
+            type: 'raster-dem',
+            tiles: ['https://tunnel.optgeo.org/martin/fusi/{z}/{x}/{y}'],
+            encoding: 'terrarium',
+            tileSize: 512,
+            minzoom: 0,
+            maxzoom: 16
+          },
+          contourSource: {
+            type: 'vector',
+            tiles: [
+              demSource.contourProtocolUrl({
+                // z=16まで利用可能なため高ズームで密度を上げる
+                thresholds: {
+                  11: [50, 500],           // 広域: 100m 主要線
+                  12: [20, 200],       // 中域: 20m 補助線 + 100m 主要線
+                  13: [10, 100],       // 中詳細: 10m 補助線 + 100m 主要線
+                  14: [5, 50],         // 詳細: 5m 補助線 + 50m 主要線
+                  15: [2, 20],         // 高詳細: 2m 補助線 + 10m 主要線
+                  16: [1, 10]       // 最高詳細: 1m, 5m, 10m
+                },
+                elevationKey: 'ele',
+                levelKey: 'level',
+                contourLayer: 'contours',
+                // タイル境界でラインが分断され縦線状に見えるのを緩和するため buffer 拡大
+                buffer: 4,
+                overzoom: 2
+              })
+            ],
+            maxzoom: 17
+          }
+        },
+        layers: [
+          {
+            id: 'background',
+            type: 'background',
+            paint: {
+              'background-color': '#e0e0e0'
+            }
+          },
+          {
+            id: 'hillshade',
+            type: 'hillshade',
+            source: 'fusiTerrain',
+            paint: {
+              'hillshade-exaggeration': 0.2,
+              'hillshade-highlight-color': 'rgb(255,255,235)',
+              'hillshade-shadow-color': 'rgb(110,120,130)'
+            }
+          },
+          {
+            id: 'contours',
+            type: 'line',
+            source: 'contourSource',
+            'source-layer': 'contours',
+            paint: {
+              'line-color': 'rgb(215,151,60)',
+              // level 1=主要線(500m等), それ以外は補助線として線幅差別化
+              'line-width': [
+                'interpolate', ['linear'], ['zoom'],
+                11, ['match', ['get','level'], 1, 0.8, 0.4],
+                14, ['match', ['get','level'], 1, 1.2, 0.6],
+                16, ['match', ['get','level'], 1, 1.5, 0.7]
+              ],
+              // 線の継ぎ目強調を抑える
+              'line-opacity': 0.95
+            },
+            layout: {
+              'line-cap': 'round',
+              'line-join': 'round'
+            }
+          }
+        ],
+        terrain: {
+          source: 'fusiTerrain'
+        }
+      }
+    });
+
+    map.addControl(new maplibregl.NavigationControl({ visualizePitch:true }), 'top-right');
+
+    map.on('load', () => {
+      const attributionControl = document.querySelector('.maplibregl-ctrl-attrib-inner');
+      if (attributionControl && !attributionControl.innerHTML.includes('国土地理院')) {
+        attributionControl.innerHTML += ' | データ: <a href="https://www.gsi.go.jp/" target="_blank" rel="noopener noreferrer">国土地理院 (GSI Japan)</a> R 6JHs 133';
+      }
+    });
+  </script>
+</body>
+</html>
