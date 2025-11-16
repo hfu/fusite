@@ -14,10 +14,12 @@
     <link href="style.css" rel="stylesheet" />
 </head>
 
-<body>
+<body class="has-info-toggle">
     <div id="map"></div>
+
+    <button id="info-toggle" class="info-toggle" aria-expanded="false" aria-controls="info-panel" title="情報を開く">ℹ️</button>
     
-    <div class="info-panel">
+    <div id="info-panel" class="info-panel hidden" aria-hidden="true">
         <h1>fusi 標高タイル</h1>
         <p>国土地理院の標高データを Terrarium 形式で可視化</p>
         <p class="attribution">
@@ -442,6 +444,22 @@
                 attributionControl.innerHTML += ' | データ: <a href="https://www.gsi.go.jp/" target="_blank" rel="noopener noreferrer">国土地理院 (GSI Japan)</a> R 6JHs 133';
             }
         });
+
+        // Info panel toggle
+        const toggleBtn = document.getElementById('info-toggle');
+        const infoPanel = document.getElementById('info-panel');
+        const updateToggleUi = () => {
+            const isOpen = !infoPanel.classList.contains('hidden');
+            toggleBtn.setAttribute('aria-expanded', String(isOpen));
+            infoPanel.setAttribute('aria-hidden', String(!isOpen));
+            toggleBtn.textContent = isOpen ? '×' : 'ℹ️';
+            toggleBtn.title = isOpen ? '情報を閉じる' : '情報を開く';
+        };
+        toggleBtn.addEventListener('click', () => {
+            infoPanel.classList.toggle('hidden');
+            updateToggleUi();
+        });
+        updateToggleUi();
     </script>
 </body>
 

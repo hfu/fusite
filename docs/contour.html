@@ -15,9 +15,10 @@
     .info-panel { max-width:340px; }
   </style>
 </head>
-<body>
+<body class="has-info-toggle">
   <div id="map"></div>
-  <div class="info-panel">
+  <button id="info-toggle" class="info-toggle" aria-expanded="false" aria-controls="info-panel" title="情報を開く">ℹ️</button>
+  <div id="info-panel" class="info-panel hidden" aria-hidden="true">
     <h1>等高線表示 (動的生成)</h1>
     <p>Terrarium 標高タイルから <code>maplibre-contour</code> を用いてズーム別閾値で等高線を生成。</p>
     <p class="attribution">
@@ -134,6 +135,22 @@
         attributionControl.innerHTML += ' | データ: <a href="https://www.gsi.go.jp/" target="_blank" rel="noopener noreferrer">国土地理院 (GSI Japan)</a> R 6JHs 133';
       }
     });
+
+    // Info panel toggle
+    const toggleBtn = document.getElementById('info-toggle');
+    const infoPanel = document.getElementById('info-panel');
+    const updateToggleUi = () => {
+      const isOpen = !infoPanel.classList.contains('hidden');
+      toggleBtn.setAttribute('aria-expanded', String(isOpen));
+      infoPanel.setAttribute('aria-hidden', String(!isOpen));
+      toggleBtn.textContent = isOpen ? '×' : 'ℹ️';
+      toggleBtn.title = isOpen ? '情報を閉じる' : '情報を開く';
+    };
+    toggleBtn.addEventListener('click', () => {
+      infoPanel.classList.toggle('hidden');
+      updateToggleUi();
+    });
+    updateToggleUi();
   </script>
 </body>
 </html>
