@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8" />
     <title>fusi - 国土地理院標高タイル可視化（地形1.5倍誇張）</title>
-    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content="国土地理院の標高データを WebP Terrarium タイルとして可視化（地形を1.5倍に誇張表示）" />
     
     <!-- MapLibre GL JS -->
@@ -17,18 +17,21 @@
     <link href="style.css" rel="stylesheet" />
 </head>
 
-<body>
+<body class="has-info-toggle">
     <div id="map"></div>
+
+    <!-- Toggle button (top-left) -->
+    <button id="info-toggle" class="info-toggle" aria-expanded="false" aria-controls="info-panel" title="情報を開く">ℹ️</button>
     
-    <div class="info-panel">
+    <div id="info-panel" class="info-panel hidden" aria-hidden="true">
         <h1>fusi 標高タイル</h1>
         <p>国土地理院の標高データを Terrarium 形式で可視化（地形1.5倍誇張）</p>
         <p class="attribution">
-            データ: <a href="https://www.gsi.go.jp/" target="_blank">国土地理院 (GSI Japan)</a><br>
+            データ: <a href="https://www.gsi.go.jp/" target="_blank" rel="noopener noreferrer">国土地理院 (GSI Japan)</a><br>
             測量法に基づく国土地理院長承認（使用）R 6JHs 133<br>
             <br>
-            Inspired by <a href="https://github.com/mapterhorn/mapterhorn" target="_blank">Mapterhorn</a><br>
-            Made with <a href="https://github.com/hfu/fusi" target="_blank">fusi</a>
+            Inspired by <a href="https://github.com/mapterhorn/mapterhorn" target="_blank" rel="noopener noreferrer">Mapterhorn</a><br>
+            Made with <a href="https://github.com/hfu/fusi" target="_blank" rel="noopener noreferrer">fusi</a>
         </p>
     </div>
     
@@ -220,6 +223,24 @@
         map.on('error', (e) => {
             console.error('Map error:', e);
         });
+
+        // Toggle behavior for info panel
+        const toggleBtn = document.getElementById('info-toggle');
+        const infoPanel = document.getElementById('info-panel');
+        const updateToggleUi = () => {
+            const isOpen = !infoPanel.classList.contains('hidden');
+            toggleBtn.setAttribute('aria-expanded', String(isOpen));
+            infoPanel.setAttribute('aria-hidden', String(!isOpen));
+            toggleBtn.textContent = isOpen ? '×' : 'ℹ️';
+            toggleBtn.title = isOpen ? '情報を閉じる' : '情報を開く';
+        };
+        toggleBtn.addEventListener('click', () => {
+            infoPanel.classList.toggle('hidden');
+            updateToggleUi();
+        });
+
+        // Ensure correct initial state
+        updateToggleUi();
     </script>
 </body>
 
